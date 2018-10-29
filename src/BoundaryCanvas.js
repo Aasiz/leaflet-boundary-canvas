@@ -1,4 +1,4 @@
-﻿(function() {
+(function() {
 
 'use strict';
 
@@ -198,7 +198,7 @@ var ExtendMethods = {
             callback();
             return;
         }
-
+			  this._numberOfTilesLoading++;
         var ts = this.options.tileSize,
             tileX = ts * tilePoint.x,
             tileY = ts * tilePoint.y,
@@ -206,8 +206,9 @@ var ExtendMethods = {
             ctx = canvas.getContext('2d'),
             imageObj = new Image(),
             _this = this;
-            
-        var setPattern = function () {
+
+
+        var setPattern = () =>  {
             var c, r, p,
                 pattern,
                 geom;
@@ -237,18 +238,23 @@ var ExtendMethods = {
             ctx.fillStyle = pattern;
             ctx.fill();
             callback();
+
+					this._numberOfTilesLoading--;
+					//console.log(this._numberOfTilesLoading);
+					if(this._numberOfTilesLoading===0){
+						this.options.finishedCallback();
+          }
+
         };
-        
         if (this.options.crossOrigin) {
             imageObj.crossOrigin = '';
         }
         
-        imageObj.onload = function () {
+        imageObj.onload = () =>  {
             //TODO: implement correct image loading cancelation
             canvas.complete = true; //HACK: emulate HTMLImageElement property to make happy L.TileLayer
             setTimeout(setPattern, 0); //IE9 bug - black tiles appear randomly if call setPattern() without timeout
         }
-        
         imageObj.src = url;
     },
     
@@ -304,7 +310,7 @@ if (L.version >= '0.8') {
             this._boundaryCache = {}; //cache index "x:y:z"
             this._mercBoundary = null;
             this._mercBbox = null;
-            
+					  this._numberOfTilesLoading = 0; //Added by Ashish
             if (this.options.trackAttribution) {
                 this._attributionRemoved = true;
                 this.getAttribution = null;
@@ -338,7 +344,7 @@ if (L.version >= '0.8') {
             this._boundaryCache = {}; //cache index "x:y:z"
             this._mercBoundary = null;
             this._mercBbox = null;
-            
+            this._numberOfTilesLoading = 0;  //Added by Ashish
             if (this.options.trackAttribution) {
                 this._attributionRemoved = true;
                 this.getAttribution = null;
